@@ -5,7 +5,7 @@ import urllib
 import subprocess
 
 
-TRACE_PATH = '../cooked_traces/' 
+TRACE_PATH = '../sim/cooked_traces/'
 
 with open('./chrome_retry_log', 'wb') as f:
 	f.write('chrome retry log\n')

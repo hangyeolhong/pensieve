@@ -2,12 +2,13 @@ import os
 import logging
 import numpy as np
 import multiprocessing as mp
-os.environ['CUDA_VISIBLE_DEVICES']=''
+
+
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
 import tensorflow as tf
 import env
 import a3c
 import load_trace
-
 
 S_INFO = 6  # bit_rate, buffer_size, next_chunk_size, bandwidth_measurement(throughput and time), chunk_til_video_end
 S_LEN = 8  # take how many frames in the past
@@ -17,7 +18,7 @@ CRITIC_LR_RATE = 0.001
 NUM_AGENTS = 16
 TRAIN_SEQ_LEN = 100  # take as a train batch
 MODEL_SAVE_INTERVAL = 100
-VIDEO_BIT_RATE = [300,750,1200,1850,2850,4300]  # Kbps
+VIDEO_BIT_RATE = [300, 750, 1200, 1850, 2850, 4300]  # Kbps
 HD_REWARD = [1, 2, 3, 12, 15, 20]
 BUFFER_NORM_FACTOR = 10.0
 CHUNK_TIL_VIDEO_END_CAP = 48.0
@@ -39,10 +40,10 @@ def testing(epoch, nn_model, log_file):
     # clean up the test results folder
     os.system('rm -r ' + TEST_LOG_FOLDER)
     os.system('mkdir ' + TEST_LOG_FOLDER)
-    
+
     # run test script
     os.system('python rl_test.py ' + nn_model)
-    
+
     # append test performance to the log
     rewards = []
     test_log_files = os.listdir(TEST_LOG_FOLDER)
@@ -77,7 +78,6 @@ def testing(epoch, nn_model, log_file):
 
 
 def central_agent(net_params_queues, exp_queues):
-
     assert len(net_params_queues) == NUM_AGENTS
     assert len(exp_queues) == NUM_AGENTS
 
@@ -113,7 +113,7 @@ def central_agent(net_params_queues, exp_queues):
             # synchronize the network parameters of work agent
             actor_net_params = actor.get_network_params()
             critic_net_params = critic.get_network_params()
-            for i in xrange(NUM_AGENTS):
+            for i in range(NUM_AGENTS):
                 net_params_queues[i].put([actor_net_params, critic_net_params])
                 # Note: this is synchronous version of the parallel training,
                 # which is easier to understand and probe. The framework can be
@@ -129,13 +129,13 @@ def central_agent(net_params_queues, exp_queues):
             total_reward = 0.0
             total_td_loss = 0.0
             total_entropy = 0.0
-            total_agents = 0.0 
+            total_agents = 0.0
 
             # assemble experiences from the agents
             actor_gradient_batch = []
             critic_gradient_batch = []
 
-            for i in xrange(NUM_AGENTS):
+            for i in range(NUM_AGENTS):
                 s_batch, a_batch, r_batch, terminal, info = exp_queues[i].get()
 
                 actor_gradient, critic_gradient, td_batch = \
@@ -165,13 +165,13 @@ def central_agent(net_params_queues, exp_queues):
             #             assembled_critic_gradient[j] += critic_gradient_batch[i][j]
             # actor.apply_gradients(assembled_actor_gradient)
             # critic.apply_gradients(assembled_critic_gradient)
-            for i in xrange(len(actor_gradient_batch)):
+            for i in range(len(actor_gradient_batch)):
                 actor.apply_gradients(actor_gradient_batch[i])
                 critic.apply_gradients(critic_gradient_batch[i])
 
             # log training information
             epoch += 1
-            avg_reward = total_reward  / total_agents
+            avg_reward = total_reward / total_agents
             avg_td_loss = total_td_loss / total_batch_len
             avg_entropy = total_entropy / total_batch_len
 
@@ -191,16 +191,15 @@ def central_agent(net_params_queues, exp_queues):
 
             if epoch % MODEL_SAVE_INTERVAL == 0:
                 # Save the neural net parameters to disk.
-                save_path = saver.save(sess, SUMMARY_DIR + "/nn_model_ep_" +
+                save_path = saver.save(sess, SUMMARY_DIR + "/HSDPA_nn_model_ep_" +
                                        str(epoch) + ".ckpt")
                 logging.info("Model saved in file: " + save_path)
-                testing(epoch, 
-                    SUMMARY_DIR + "/nn_model_ep_" + str(epoch) + ".ckpt", 
-                    test_log_file)
+                testing(epoch,
+                        SUMMARY_DIR + "/HSDPA_nn_model_ep_" + str(epoch) + ".ckpt",
+                        test_log_file)
 
 
 def agent(agent_id, all_cooked_time, all_cooked_bw, net_params_queue, exp_queue):
-
     net_env = env.Environment(all_cooked_time=all_cooked_time,
                               all_cooked_bw=all_cooked_bw,
                               random_seed=agent_id)
@@ -342,7 +341,6 @@ def agent(agent_id, all_cooked_time, all_cooked_bw, net_params_queue, exp_queue)
 
 
 def main():
-
     np.random.seed(RANDOM_SEED)
     assert len(VIDEO_BIT_RATE) == A_DIM
 
@@ -353,7 +351,7 @@ def main():
     # inter-process communication queues
     net_params_queues = []
     exp_queues = []
-    for i in xrange(NUM_AGENTS):
+    for i in range(NUM_AGENTS):
         net_params_queues.append(mp.Queue(1))
         exp_queues.append(mp.Queue(1))
 
@@ -365,12 +363,12 @@ def main():
 
     all_cooked_time, all_cooked_bw, _ = load_trace.load_trace(TRAIN_TRACES)
     agents = []
-    for i in xrange(NUM_AGENTS):
+    for i in range(NUM_AGENTS):
         agents.append(mp.Process(target=agent,
                                  args=(i, all_cooked_time, all_cooked_bw,
                                        net_params_queues[i],
                                        exp_queues[i])))
-    for i in xrange(NUM_AGENTS):
+    for i in range(NUM_AGENTS):
         agents[i].start()
 
     # wait unit training is done
