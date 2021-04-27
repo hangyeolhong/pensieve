@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 
 LOG_PATH = './results/log'
+# LOG_PATH = './test_results/log_sim_rl_test_fcc_trace_1171_http---www.yahoo.com_0'
 PLOT_SAMPLES = 300
 
 

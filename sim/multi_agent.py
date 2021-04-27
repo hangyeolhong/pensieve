@@ -97,6 +97,7 @@ def central_agent(net_params_queues, exp_queues):
         summary_ops, summary_vars = a3c.build_summaries()
 
         sess.run(tf.global_variables_initializer())
+        # sess.run(a3c.ENTROPY_WEIGHT, feed_dict={a3c.ENTROPY_WEIGHT: [5.]})
         writer = tf.summary.FileWriter(SUMMARY_DIR, sess.graph)  # training monitor
         saver = tf.train.Saver()  # save neural net parameters
 
@@ -197,6 +198,24 @@ def central_agent(net_params_queues, exp_queues):
                 testing(epoch,
                         SUMMARY_DIR + "/HSDPA_nn_model_ep_" + str(epoch) + ".ckpt",
                         test_log_file)
+
+            if (epoch >= 1) and (epoch <= 20000):
+                a3c.ENTROPY_WEIGHT = 5
+
+            elif (epoch > 20000) and (epoch <= 40000):
+                a3c.ENTROPY_WEIGHT = 1
+
+            elif (epoch > 40000) and (epoch <= 80000):
+                a3c.ENTROPY_WEIGHT = 0.5
+
+            elif (epoch> 80000) and (epoch <= 100000):
+                a3c.ENTROPY_WEIGHT = 0.3
+
+            elif epoch > 100000 :
+                a3c.ENTROPY_WEIGHT = 0.1
+
+
+        # sess.run(a3c.ENTROPY_WEIGHT, feed_dict={a3c.ENTROPY_WEIGHT : [4.]})
 
 
 def agent(agent_id, all_cooked_time, all_cooked_bw, net_params_queue, exp_queue):
@@ -355,6 +374,10 @@ def main():
         net_params_queues.append(mp.Queue(1))
         exp_queues.append(mp.Queue(1))
 
+    print("###########################\n")
+    print("TRAINING START\n")
+    print("###########################\n")
+
     # create a coordinator and multiple agent processes
     # (note: threading is not desirable due to python GIL)
     coordinator = mp.Process(target=central_agent,
@@ -362,6 +385,11 @@ def main():
     coordinator.start()
 
     all_cooked_time, all_cooked_bw, _ = load_trace.load_trace(TRAIN_TRACES)
+
+    print("###########################\n")
+    print("LOAD TRACES\n")
+    print("###########################\n")
+
     agents = []
     for i in range(NUM_AGENTS):
         agents.append(mp.Process(target=agent,
