@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 import numpy as np
 import multiprocessing as mp
@@ -32,8 +33,8 @@ SUMMARY_DIR = './results'
 LOG_FILE = './results/log'
 TEST_LOG_FOLDER = './test_results/'
 TRAIN_TRACES = './cooked_traces/'
-# NN_MODEL = './results/pretrain_linear_reward.ckpt'
-NN_MODEL = None
+NN_MODEL = './results/HSDPA_nn_model_ep_119600.ckpt'
+# NN_MODEL = None
 
 
 def testing(epoch, nn_model, log_file):
@@ -107,7 +108,7 @@ def central_agent(net_params_queues, exp_queues):
             saver.restore(sess, nn_model)
             print("Model restored.")
 
-        epoch = 0
+        epoch = 120000
 
         # assemble experiences from agents, compute the gradients
         while True:
@@ -199,20 +200,23 @@ def central_agent(net_params_queues, exp_queues):
                         SUMMARY_DIR + "/HSDPA_nn_model_ep_" + str(epoch) + ".ckpt",
                         test_log_file)
 
-            if (epoch >= 1) and (epoch <= 20000):
-                a3c.ENTROPY_WEIGHT = 5
-
-            elif (epoch > 20000) and (epoch <= 40000):
-                a3c.ENTROPY_WEIGHT = 1
-
-            elif (epoch > 40000) and (epoch <= 80000):
-                a3c.ENTROPY_WEIGHT = 0.5
-
-            elif (epoch> 80000) and (epoch <= 100000):
-                a3c.ENTROPY_WEIGHT = 0.3
-
-            elif epoch > 100000 :
-                a3c.ENTROPY_WEIGHT = 0.1
+            if epoch == 140000:
+                print("########################## END ##############################")
+                sys.exit()
+            # if (epoch >= 1) and (epoch <= 20000):
+            #     a3c.ENTROPY_WEIGHT = 5
+            #
+            # elif (epoch > 20000) and (epoch <= 40000):
+            #     a3c.ENTROPY_WEIGHT = 1
+            #
+            # elif (epoch > 40000) and (epoch <= 80000):
+            #     a3c.ENTROPY_WEIGHT = 0.5
+            #
+            # elif (epoch> 80000) and (epoch <= 100000):
+            #     a3c.ENTROPY_WEIGHT = 0.3
+            #
+            # elif epoch > 100000 :
+            #     a3c.ENTROPY_WEIGHT = 0.1
 
 
         # sess.run(a3c.ENTROPY_WEIGHT, feed_dict={a3c.ENTROPY_WEIGHT : [4.]})

@@ -25,8 +25,8 @@ RAND_RANGE = 1000
 SUMMARY_DIR = './results'
 LOG_FILE = './results/log_sim_rl'
 # log in format of time_stamp bit_rate buffer_size rebuffer_time chunk_size download_time reward
-# NN_MODEL = './models/pretrain_linear_reward.ckpt'
-NN_MODEL = './models/HSDPA_nn_model_ep_120600.ckpt'
+NN_MODEL = './models/pretrain_linear_reward.ckpt'
+# NN_MODEL = './models/HSDPA_nn_model_ep_119600.ckpt'
 
 
 def main():

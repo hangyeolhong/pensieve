@@ -6,9 +6,10 @@ import tflearn
 GAMMA = 0.99
 A_DIM = 6
 # ENTROPY_WEIGHT = tf.placeholder(dtype=tf.float32)
-ENTROPY_WEIGHT = 5
+ENTROPY_WEIGHT = 0.05
 ENTROPY_EPS = 1e-6
 S_INFO = 4
+
 
 def decrease_var(var, min_var, decay_rate):
     if var - decay_rate >= min_var:
@@ -16,6 +17,7 @@ def decrease_var(var, min_var, decay_rate):
     else:
         var = min_var
     return var
+
 
 class ActorNetwork(object):
     """
